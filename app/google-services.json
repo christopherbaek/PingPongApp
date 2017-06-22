@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "258449791350",
+    "firebase_url": "https://pingpong-b90df.firebaseio.com",
+    "project_id": "pingpong-b90df",
+    "storage_bucket": "pingpong-b90df.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:258449791350:android:c9492fdb0759050a",
+        "android_client_info": {
+          "package_name": "com.cbaek.pingpongapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "258449791350-ajddrkj5gqa8u8bj0m3fe69pt7ffkts9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cbaek.pingpongapp",
+            "certificate_hash": "3087522b6d7b857e45e6656568b3f120a5c08a53"
+          }
+        },
+        {
+          "client_id": "258449791350-i08f4qc3bbj287vvoliss0eksa8hnpl3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCsRCbJamqTO7ylywYOOf0xfMAiwdW2a0I"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "258449791350-i08f4qc3bbj287vvoliss0eksa8hnpl3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
