@@ -19,12 +19,12 @@
 
     </LinearLayout>
 
-    <ScrollView android:id="@+id/console_layout"
+    <ScrollView android:id="@+id/console_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_below="@+id/button_layout">
 
-        <TextView android:id="@+id/console_view"
+        <TextView android:id="@+id/console_contents"
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content" />
 
