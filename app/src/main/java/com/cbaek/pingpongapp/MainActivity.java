@@ -35,13 +35,20 @@ public class MainActivity extends AppCompatActivity {
     private final PingPongServiceStartedBroadcastReceiver pingPongServiceStartedBroadcastReceiver = new PingPongServiceStartedBroadcastReceiver();
     private final PingPongServiceDestroyedBroadcastReceiver pingPongServiceDestroyedBroadcastReceiver = new PingPongServiceDestroyedBroadcastReceiver();
 
+    private ToggleButton toggleButton;
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // set up toggle button
-        final ToggleButton toggleButton = (ToggleButton) findViewById(R.id.toggle_button);
+        initializeToggleButton();
+        initializePingPongServiceStartedBroadcastReceiver();
+        initializePingPongServiceDestroyedBroadcastReceiver();
+    }
+
+    private void initializeToggleButton() {
+        toggleButton = (ToggleButton) findViewById(R.id.toggle_button);
         toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
             @Override
@@ -58,22 +65,28 @@ public class MainActivity extends AppCompatActivity {
             }
 
         });
+    }
 
-        // set up start service broadcast receiver
-        final IntentFilter pingPongServiceStartedIntentFilter = new IntentFilter(PingPongService.PING_PONG_SERVICE_STARTED_ACTION);
+    private void initializePingPongServiceStartedBroadcastReceiver() {
+        final IntentFilter pingPongServiceStartedIntentFilter =
+                new IntentFilter(PingPongService.PING_PONG_SERVICE_STARTED_ACTION);
+
         LocalBroadcastManager
                 .getInstance(getApplicationContext())
                 .registerReceiver(
                         pingPongServiceStartedBroadcastReceiver,
                         pingPongServiceStartedIntentFilter);
+    }
 
-        // set up destroy service broadcast receiver
-        final IntentFilter pingPongServiceDestroyedIntentFilter = new IntentFilter(PingPongService.PING_PONG_SERVICE_DESTROYED_ACTION);
+    private void initializePingPongServiceDestroyedBroadcastReceiver() {
+        final IntentFilter pingPongServiceDestroyedIntentFilter =
+                new IntentFilter(PingPongService.PING_PONG_SERVICE_DESTROYED_ACTION);
+
         LocalBroadcastManager
                 .getInstance(getApplicationContext())
                 .registerReceiver(
                         pingPongServiceDestroyedBroadcastReceiver,
-                        pingPongServiceStartedIntentFilter);
+                        pingPongServiceDestroyedIntentFilter);
     }
 
     private void appendConsoleMessage(final String message) {
