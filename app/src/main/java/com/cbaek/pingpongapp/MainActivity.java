@@ -1,10 +1,13 @@
 package com.cbaek.pingpongapp;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.CompoundButton;
@@ -45,7 +48,9 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onReceive(final Context context, final Intent intent) {
-            appendConsoleMessage("PingPongService received pong");
+            final Bundle extras = intent.getExtras();
+            final String message = extras.getString(PingPongService.PING_PONG_SERVICE_PONG_MESSAGE_KEY);
+            appendConsoleMessage(String.format("PingPongService received pong: %s", message));
         }
 
     }
@@ -78,8 +83,16 @@ public class MainActivity extends AppCompatActivity {
                 final Intent pingPongServiceIntent = new Intent(MainActivity.this, PingPongService.class);
 
                 if (isChecked) {
-                    appendConsoleMessage("Sending start PingPongService intent");
-                    startService(pingPongServiceIntent);
+                    final int internetPermissionStatus = ContextCompat.checkSelfPermission(
+                            MainActivity.this,
+                            Manifest.permission.INTERNET);
+
+                    if (internetPermissionStatus != PackageManager.PERMISSION_GRANTED) {
+                        appendConsoleMessage("Internet permission not granted. Behavior unknown.");
+                    } else {
+                        appendConsoleMessage("Sending start PingPongService intent");
+                        startService(pingPongServiceIntent);
+                    }
                 } else {
                     appendConsoleMessage("Sending stop PingPongService intent");
                     stopService(pingPongServiceIntent);
