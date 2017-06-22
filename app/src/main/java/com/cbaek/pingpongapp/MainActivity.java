@@ -32,10 +32,28 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private final class PingPongServicePingSentBroadcastReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
+            appendConsoleMessage("PingPongService sent ping");
+        }
+
+    }
+
+    private final class PingPongServicePongReceivedBroadcastReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
+            appendConsoleMessage("PingPongService received pong");
+        }
+
+    }
+
     private final PingPongServiceStartedBroadcastReceiver pingPongServiceStartedBroadcastReceiver = new PingPongServiceStartedBroadcastReceiver();
     private final PingPongServiceDestroyedBroadcastReceiver pingPongServiceDestroyedBroadcastReceiver = new PingPongServiceDestroyedBroadcastReceiver();
-
-    private ToggleButton toggleButton;
+    private final PingPongServicePingSentBroadcastReceiver pingPongServicePingSentBroadcastReceiver = new PingPongServicePingSentBroadcastReceiver();
+    private final PingPongServicePongReceivedBroadcastReceiver pingPongServicePongReceivedBroadcastReceiver = new PingPongServicePongReceivedBroadcastReceiver();
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -45,10 +63,14 @@ public class MainActivity extends AppCompatActivity {
         initializeToggleButton();
         initializePingPongServiceStartedBroadcastReceiver();
         initializePingPongServiceDestroyedBroadcastReceiver();
+        initializePingPongServicePingSentBroadcastReceiver();
+        initializePingPongServicePongReceivedBroadcastReceiver();
+
+        appendConsoleMessage("Initialization complete");
     }
 
     private void initializeToggleButton() {
-        toggleButton = (ToggleButton) findViewById(R.id.toggle_button);
+        final ToggleButton toggleButton = (ToggleButton) findViewById(R.id.toggle_button);
         toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
             @Override
@@ -87,6 +109,28 @@ public class MainActivity extends AppCompatActivity {
                 .registerReceiver(
                         pingPongServiceDestroyedBroadcastReceiver,
                         pingPongServiceDestroyedIntentFilter);
+    }
+
+    private void initializePingPongServicePingSentBroadcastReceiver() {
+        final IntentFilter pingPongServicePingSentIntentFilter =
+                new IntentFilter(PingPongService.PING_PONG_SERVICE_PING_SENT_ACTION);
+
+        LocalBroadcastManager
+                .getInstance(getApplicationContext())
+                .registerReceiver(
+                        pingPongServicePingSentBroadcastReceiver,
+                        pingPongServicePingSentIntentFilter);
+    }
+
+    private void initializePingPongServicePongReceivedBroadcastReceiver() {
+        final IntentFilter pingPongServicePongReceivedIntentFilter =
+                new IntentFilter(PingPongService.PING_PONG_SERVICE_PONG_RECEIVED_ACTION);
+
+        LocalBroadcastManager
+                .getInstance(getApplicationContext())
+                .registerReceiver(
+                        pingPongServicePongReceivedBroadcastReceiver,
+                        pingPongServicePongReceivedIntentFilter);
     }
 
     private void appendConsoleMessage(final String message) {
