@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
                         startService(pingPongServiceIntent);
                     }
                 } else {
-                    appendConsoleMessage("Sending stop PingPongService intent");
+                    appendConsoleMessage("Sending setRunning PingPongService intent");
                     stopService(pingPongServiceIntent);
                 }
             }
