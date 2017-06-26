@@ -1,26 +1,32 @@
 package com.cbaek.pingpongapp;
 
-import android.app.Service;
-import android.content.Intent;
-import android.os.IBinder;
 import android.util.Log;
 
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
 
+import javax.inject.Inject;
+
 public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
 
     private static final String TAG = MyFirebaseInstanceIDService.class.getSimpleName();
+
+    private final PingPongClient pingPongClient;
+
+    @Inject
+    public MyFirebaseInstanceIDService(final PingPongClient pingPongClient) {
+        this.pingPongClient = pingPongClient;
+    }
 
     /**
      * On initial startup of your app, the FCM SDK generates a registration
      * token for the client app instance. If you want to target single
      * devices, or create device groups, you'll need to access this token.
-     *
+     * <p>
      * You can access the token's value by creating a new class which
      * extends FirebaseInstanceIdService . In that class, call getToken
      * within onTokenRefresh, and log the value as shown:
-     *
+     * <p>
      * The onTokenRefresh callback fires whenever a new token is generated,
      * so calling getToken in its context ensures that you are accessing a
      * current, available registration token. FirebaseInstanceID.getToken()

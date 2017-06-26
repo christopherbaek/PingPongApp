@@ -6,51 +6,52 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
+
+import javax.inject.Inject;
+
+import dagger.Component;
+import dagger.Module;
 
 public class PingPongService extends Service {
 
+    public static final String PING_PONG_SERVICE_STARTED_ACTION = "com.cbaek.pingpongapp.PING_PONG_SERVICE_STARTED";
+    public static final String PING_PONG_SERVICE_DESTROYED_ACTION = "com.cbaek.pingpongapp.PING_PONG_SERVICE_DESTROYED";
+    public static final String PING_PONG_SERVICE_PING_SENT_ACTION = "com.cbaek.pingpongapp.PING_PONG_SERVICE_PING_SENT";
+    public static final String PING_PONG_SERVICE_PONG_RECEIVED_ACTION = "com.cbaek.pingpongapp.PING_PONG_SERVICE_PONG_RECEIVED";
+    public static final String PING_PONG_SERVICE_PONG_MESSAGE_KEY = "com.cbaek.pingpongapp.PING_PONG_SERVICE_PONG_MESSAGE";
+    public static final String PING_PONG_SERVICE_EXCEPTION_ACTION = "com.cbaek.pingpongapp.PING_PONG_SERVICE_EXCEPTION";
+    public static final String PING_PONG_SERVICE_EXCEPTION_MESSAGE_KEY = "com.cbaek.pingpongapp.PING_PONG_SERVICE_EXCEPTION_MESSAGE";
+
     private final class PingPongServiceTask implements Runnable {
 
-        private final String hostName;
-        private final int port;
+        private static final int MILLISECONDS_PER_SECOND = 1000;
+        private static final int PING_PONG_SERVICE_PING_INTERVAL_SECONDS = 3;
 
-        private final char[] buffer = new char[25];
+        private final PingPongClient pingPongClient;
 
-        private Socket socket;
-        private OutputStreamWriter output;
-        private InputStreamReader input;
         private boolean running = true;
 
-        private PingPongServiceTask(final String hostName, final int port) {
-            this.hostName = hostName;
-            this.port = port;
-        }
-
-        public void initialize() {
-            try {
-                socket = new Socket(hostName, port);
-                output = new OutputStreamWriter(socket.getOutputStream());
-                input = new InputStreamReader(socket.getInputStream());
-            } catch (final IOException e) {
-                e.printStackTrace();
-                broadcastPingPongServiceExceptionIntent(e.getMessage());
-            }
+        private PingPongServiceTask(final PingPongClient pingPongClient) {
+            this.pingPongClient = pingPongClient;
         }
 
         @Override
         public void run() {
-            initialize();
+            try {
+                pingPongClient.initialize();
+            } catch (final IOException e) {
+                e.printStackTrace();
+                broadcastPingPongServiceExceptionIntent(e.getMessage());
+            }
 
             while (running) {
                 try {
                     doWork();
                     Thread.sleep(PING_PONG_SERVICE_PING_INTERVAL_SECONDS * MILLISECONDS_PER_SECOND);
-                } catch (InterruptedException e) {
+                } catch (final InterruptedException e) {
                     e.printStackTrace();
                     broadcastPingPongServiceExceptionIntent(e.getMessage());
                 }
@@ -59,12 +60,10 @@ public class PingPongService extends Service {
 
         private void doWork() {
             try {
-                output.write(PING_PONG_SERVER_MESSAGE);
-                output.flush();
+                pingPongClient.sendPingMessage();
                 broadcastPingPongServicePingSentIntent();
 
-                final int charactersRead = input.read(buffer, 0, buffer.length);
-                final String message = new String(buffer, 0, charactersRead);
+                final String message = pingPongClient.readServerMessage();
                 broadcastPingPongServicePongReceivedIntent(message);
             } catch (final IOException e) {
                 e.printStackTrace();
@@ -78,21 +77,17 @@ public class PingPongService extends Service {
 
     }
 
-    static final String PING_PONG_SERVICE_STARTED_ACTION = "com.cbaek.pingpongapp.PING_PONG_SERVICE_STARTED";
-    static final String PING_PONG_SERVICE_DESTROYED_ACTION = "com.cbaek.pingpongapp.PING_PONG_SERVICE_DESTROYED";
-    static final String PING_PONG_SERVICE_PING_SENT_ACTION = "com.cbaek.pingpongapp.PING_PONG_SERVICE_PING_SENT";
-    static final String PING_PONG_SERVICE_PONG_RECEIVED_ACTION = "com.cbaek.pingpongapp.PING_PONG_SERVICE_PONG_RECEIVED";
-    static final String PING_PONG_SERVICE_PONG_MESSAGE_KEY = "com.cbaek.pingpongapp.PING_PONG_SERVICE_PONG_MESSAGE";
-    static final String PING_PONG_SERVICE_EXCEPTION_ACTION = "com.cbaek.pingpongapp.PING_PONG_SERVICE_EXCEPTION";
-    static final String PING_PONG_SERVICE_EXCEPTION_MESSAGE_KEY = "com.cbaek.pingpongapp.PING_PONG_SERVICE_EXCEPTION_MESSAGE";
+    @Inject
+    PingPongClient pingPongClient;
 
-    private static final int MILLISECONDS_PER_SECOND = 1000;
-    private static final int PING_PONG_SERVICE_PING_INTERVAL_SECONDS = 3;
-    private static final String PING_PONG_SERVER_HOST = "cbaek.com";
-    private static final int PING_PONG_SERVER_PORT = 9999;
-    private static final String PING_PONG_SERVER_MESSAGE = "ping";
+    private PingPongServiceTask pingPongServiceTask;
 
-    private final PingPongServiceTask pingPongServiceTask = new PingPongServiceTask(PING_PONG_SERVER_HOST, PING_PONG_SERVER_PORT);
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        DaggerPingPongAppComponent.builder().build().inject(this);
+        this.pingPongServiceTask = new PingPongServiceTask(pingPongClient);
+    }
 
     @Override
     public int onStartCommand(final Intent intent, final int flags, final int startId) {
@@ -103,12 +98,6 @@ public class PingPongService extends Service {
         return START_STICKY;
     }
 
-    /**
-     * Return null since binding is not supported.
-     *
-     * @param intent
-     * @return
-     */
     @Nullable
     @Override
     public IBinder onBind(final Intent intent) {
