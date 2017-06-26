@@ -11,4 +11,6 @@ public interface PingPongAppComponent {
 
     void inject(PingPongService pingPongService);
 
+    void inject(MyFirebaseInstanceIDService myFirebaseInstanceIDService);
+
 }

@@ -1,9 +1,12 @@
 package com.cbaek.pingpongapp;
 
+import android.content.Intent;
 import android.util.Log;
 
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
+
+import java.io.IOException;
 
 import javax.inject.Inject;
 
@@ -11,11 +14,20 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
 
     private static final String TAG = MyFirebaseInstanceIDService.class.getSimpleName();
 
-    private final PingPongClient pingPongClient;
+    public static final String MY_FIREBASE_INSTANCE_ID_SERVICE_TOKEN_SENT_ACTION = "com.cbaek.pingpongapp.MY_FIREBASE_INSTANCE_ID_SERVICE_TOKEN_SENT_ACTION";
+    public static final String MY_FIREBASE_INSTANCE_ID_SERVICE_TOKEN_KEY = "com.cbaek.pingpongapp.MY_FIREBASE_INSTANCE_ID_SERVICE_TOKEN";
 
     @Inject
-    public MyFirebaseInstanceIDService(final PingPongClient pingPongClient) {
-        this.pingPongClient = pingPongClient;
+    PingPongClient pingPongClient;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        Log.i(TAG, "MyFirebaseInstanceIDService started");
+        DaggerPingPongAppComponent.builder().build().inject(this);
+
+        final String token = FirebaseInstanceId.getInstance().getToken();
+        Log.i(TAG, "Got token: " + token);
     }
 
     /**
@@ -36,12 +48,27 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
     public void onTokenRefresh() {
         // Get updated InstanceID token.
         final String refreshedToken = FirebaseInstanceId.getInstance().getToken();
-        Log.d(TAG, "Refreshed token: " + refreshedToken);
+        Log.i(TAG, "Refreshed token: " + refreshedToken);
 
         // If you want to send messages to this application instance or
         // manage this apps subscriptions on the server side, send the
         // Instance ID token to your app server.
         // sendRegistrationToServer(refreshedToken);
+        try {
+            pingPongClient.sendRegistrationMessage(refreshedToken);
+            broadcastMyFirebaseInstanceIDServiceTokenSentIntent(refreshedToken);
+        } catch (final IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void broadcastMyFirebaseInstanceIDServiceTokenSentIntent(final String token) {
+        final Intent pingPongServicePongReceivedIntent = new Intent(MY_FIREBASE_INSTANCE_ID_SERVICE_TOKEN_SENT_ACTION);
+        pingPongServicePongReceivedIntent.putExtra(MY_FIREBASE_INSTANCE_ID_SERVICE_TOKEN_KEY, token);
+
+        BroadcastHelper.sendLocalBroadcast(
+                getApplicationContext(),
+                pingPongServicePongReceivedIntent);
     }
 
 }

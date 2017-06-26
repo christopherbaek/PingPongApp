@@ -9,7 +9,8 @@ public class PingPongClient {
 
     private static final String PING_PONG_SERVER_HOST = "ec2-54-209-250-166.compute-1.amazonaws.com";
     private static final int PING_PONG_SERVER_PORT = 9999;
-    private static final String PING_PONG_SERVER_MESSAGE = "ping";
+    private static final String PING_PONG_SERVER_PING_MESSAGE = "ping";
+    private static final String PING_PONG_SERVER_REGISTRATION_MESSAGE_FORMAT = "registration:%s";
 
     private final String hostName;
     private final int port;
@@ -36,7 +37,12 @@ public class PingPongClient {
     }
 
     public void sendPingMessage() throws IOException {
-        output.write(PING_PONG_SERVER_MESSAGE);
+        output.write(PING_PONG_SERVER_PING_MESSAGE);
+        output.flush();
+    }
+
+    public void sendRegistrationMessage(final String token) throws IOException {
+        output.write(String.format(PING_PONG_SERVER_REGISTRATION_MESSAGE_FORMAT, token));
         output.flush();
     }
 

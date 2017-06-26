@@ -111,35 +111,39 @@ public class PingPongService extends Service {
     }
 
     private void broadcastPingPongServiceStartedIntent() {
-        sendLocalBroadcast(new Intent(PING_PONG_SERVICE_STARTED_ACTION));
+        BroadcastHelper.sendLocalBroadcast(
+                getApplicationContext(),
+                new Intent(PING_PONG_SERVICE_STARTED_ACTION));
     }
 
     private void broadcastPingPongServiceDestroyedIntent() {
-        sendLocalBroadcast(new Intent(PING_PONG_SERVICE_DESTROYED_ACTION));
+        BroadcastHelper.sendLocalBroadcast(
+                getApplicationContext(),
+                new Intent(PING_PONG_SERVICE_DESTROYED_ACTION));
     }
 
     private void broadcastPingPongServicePingSentIntent() {
-        sendLocalBroadcast(new Intent(PING_PONG_SERVICE_PING_SENT_ACTION));
+        BroadcastHelper.sendLocalBroadcast(
+                getApplicationContext(),
+                new Intent(PING_PONG_SERVICE_PING_SENT_ACTION));
     }
 
     private void broadcastPingPongServicePongReceivedIntent(final String message) {
         final Intent pingPongServicePongReceivedIntent = new Intent(PING_PONG_SERVICE_PONG_RECEIVED_ACTION);
         pingPongServicePongReceivedIntent.putExtra(PING_PONG_SERVICE_PONG_MESSAGE_KEY, message);
 
-        sendLocalBroadcast(pingPongServicePongReceivedIntent);
+        BroadcastHelper.sendLocalBroadcast(
+                getApplicationContext(),
+                pingPongServicePongReceivedIntent);
     }
 
     private void broadcastPingPongServiceExceptionIntent(final String message) {
         final Intent pingPongServiceExceptionIntent = new Intent(PING_PONG_SERVICE_EXCEPTION_ACTION);
         pingPongServiceExceptionIntent.putExtra(PING_PONG_SERVICE_EXCEPTION_MESSAGE_KEY, message);
 
-        sendLocalBroadcast(pingPongServiceExceptionIntent);
-    }
-
-    private void sendLocalBroadcast(final Intent intent) {
-        LocalBroadcastManager
-                .getInstance(getApplicationContext())
-                .sendBroadcast(intent);
+        BroadcastHelper.sendLocalBroadcast(
+                getApplicationContext(),
+                pingPongServiceExceptionIntent);
     }
 
 }

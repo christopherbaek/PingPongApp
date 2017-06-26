@@ -55,10 +55,34 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private final class PingPongServiceExceptionBroadcastReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
+            final Bundle extras = intent.getExtras();
+            final String message = extras.getString(PingPongService.PING_PONG_SERVICE_EXCEPTION_MESSAGE_KEY);
+            appendConsoleMessage(String.format("PingPongService exception: %s", message));
+        }
+
+    }
+
+    private final class MyFirebaseInstanceIDServiceTokenSent extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
+            final Bundle extras = intent.getExtras();
+            final String token = extras.getString(MyFirebaseInstanceIDService.MY_FIREBASE_INSTANCE_ID_SERVICE_TOKEN_KEY);
+            appendConsoleMessage(String.format("Registration token sent: %s", token));
+        }
+
+    }
+
     private final PingPongServiceStartedBroadcastReceiver pingPongServiceStartedBroadcastReceiver = new PingPongServiceStartedBroadcastReceiver();
     private final PingPongServiceDestroyedBroadcastReceiver pingPongServiceDestroyedBroadcastReceiver = new PingPongServiceDestroyedBroadcastReceiver();
     private final PingPongServicePingSentBroadcastReceiver pingPongServicePingSentBroadcastReceiver = new PingPongServicePingSentBroadcastReceiver();
     private final PingPongServicePongReceivedBroadcastReceiver pingPongServicePongReceivedBroadcastReceiver = new PingPongServicePongReceivedBroadcastReceiver();
+    private final PingPongServiceExceptionBroadcastReceiver pingPongServiceExceptionBroadcastReceiver = new PingPongServiceExceptionBroadcastReceiver();
+    private final MyFirebaseInstanceIDServiceTokenSent myFirebaseInstanceIDServiceTokenSentBroadcastReceiver = new MyFirebaseInstanceIDServiceTokenSent();
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -70,6 +94,8 @@ public class MainActivity extends AppCompatActivity {
         initializePingPongServiceDestroyedBroadcastReceiver();
         initializePingPongServicePingSentBroadcastReceiver();
         initializePingPongServicePongReceivedBroadcastReceiver();
+        initializePingPongServiceExceptionBroadcastReceiver();
+        initializeMyFirebaseInstanceIDServiceTokenSentBroadcastReceiver();
 
         appendConsoleMessage("Initialization complete");
     }
@@ -144,6 +170,28 @@ public class MainActivity extends AppCompatActivity {
                 .registerReceiver(
                         pingPongServicePongReceivedBroadcastReceiver,
                         pingPongServicePongReceivedIntentFilter);
+    }
+
+    private void initializePingPongServiceExceptionBroadcastReceiver() {
+        final IntentFilter pingPongServiceExceptionIntentFilter =
+                new IntentFilter(PingPongService.PING_PONG_SERVICE_EXCEPTION_ACTION);
+
+        LocalBroadcastManager
+                .getInstance(getApplicationContext())
+                .registerReceiver(
+                        pingPongServiceExceptionBroadcastReceiver,
+                        pingPongServiceExceptionIntentFilter);
+    }
+
+    private void initializeMyFirebaseInstanceIDServiceTokenSentBroadcastReceiver() {
+        final IntentFilter myFirebaseInstanceIdServiceTokenSentBroadcastReceiver =
+                new IntentFilter(MyFirebaseInstanceIDService.MY_FIREBASE_INSTANCE_ID_SERVICE_TOKEN_SENT_ACTION);
+
+        LocalBroadcastManager
+                .getInstance(getApplicationContext())
+                .registerReceiver(
+                        myFirebaseInstanceIDServiceTokenSentBroadcastReceiver,
+                        myFirebaseInstanceIdServiceTokenSentBroadcastReceiver);
     }
 
     private void appendConsoleMessage(final String message) {
