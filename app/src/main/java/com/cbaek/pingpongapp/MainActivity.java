@@ -10,188 +10,93 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.CompoundButton;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
 public class MainActivity extends AppCompatActivity {
 
-    private final class PingPongServiceStartedBroadcastReceiver extends BroadcastReceiver {
+    public static final String LOG_CONSOLE_ACTION = "com.cbaek.pingpongapp.LOG_CONSOLE_ACTION";
+    public static final String LOG_CONSOLE_MESSAGE_KEY = "com.cbaek.pingpongapp.LOG_CONSOLE_MESSAGE_KEY";
 
-        @Override
-        public void onReceive(final Context context, final Intent intent) {
-            appendConsoleMessage("PingPongService started");
-        }
-
+    public static void logConsoleMessage(final Context context, final String message) {
+        final Intent intent = new Intent(LOG_CONSOLE_ACTION);
+        intent.putExtra(LOG_CONSOLE_MESSAGE_KEY, message);
+        LocalBroadcastManager.getInstance(context.getApplicationContext()).sendBroadcast(intent);
     }
 
-    private final class PingPongServiceDestroyedBroadcastReceiver extends BroadcastReceiver {
-
-        @Override
-        public void onReceive(final Context context, final Intent intent) {
-            appendConsoleMessage("PingPongService destroyed");
-        }
-
-    }
-
-    private final class PingPongServicePingSentBroadcastReceiver extends BroadcastReceiver {
-
-        @Override
-        public void onReceive(final Context context, final Intent intent) {
-            appendConsoleMessage("PingPongService sent ping");
-        }
-
-    }
-
-    private final class PingPongServicePongReceivedBroadcastReceiver extends BroadcastReceiver {
+    private final class ConsoleMessageBroadcastReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(final Context context, final Intent intent) {
             final Bundle extras = intent.getExtras();
-            final String message = extras.getString(PingPongService.PING_PONG_SERVICE_PONG_MESSAGE_KEY);
-            appendConsoleMessage(String.format("PingPongService received pong: %s", message));
+            final String message = extras.getString(LOG_CONSOLE_MESSAGE_KEY);
+            appendConsoleMessage(message);
         }
 
     }
 
-    private final class PingPongServiceExceptionBroadcastReceiver extends BroadcastReceiver {
-
-        @Override
-        public void onReceive(final Context context, final Intent intent) {
-            final Bundle extras = intent.getExtras();
-            final String message = extras.getString(PingPongService.PING_PONG_SERVICE_EXCEPTION_MESSAGE_KEY);
-            appendConsoleMessage(String.format("PingPongService exception: %s", message));
-        }
-
-    }
-
-    private final class MyFirebaseInstanceIDServiceTokenSent extends BroadcastReceiver {
-
-        @Override
-        public void onReceive(final Context context, final Intent intent) {
-            final Bundle extras = intent.getExtras();
-            final String token = extras.getString(MyFirebaseInstanceIDService.MY_FIREBASE_INSTANCE_ID_SERVICE_TOKEN_KEY);
-            appendConsoleMessage(String.format("Registration token sent: %s", token));
-        }
-
-    }
-
-    private final PingPongServiceStartedBroadcastReceiver pingPongServiceStartedBroadcastReceiver = new PingPongServiceStartedBroadcastReceiver();
-    private final PingPongServiceDestroyedBroadcastReceiver pingPongServiceDestroyedBroadcastReceiver = new PingPongServiceDestroyedBroadcastReceiver();
-    private final PingPongServicePingSentBroadcastReceiver pingPongServicePingSentBroadcastReceiver = new PingPongServicePingSentBroadcastReceiver();
-    private final PingPongServicePongReceivedBroadcastReceiver pingPongServicePongReceivedBroadcastReceiver = new PingPongServicePongReceivedBroadcastReceiver();
-    private final PingPongServiceExceptionBroadcastReceiver pingPongServiceExceptionBroadcastReceiver = new PingPongServiceExceptionBroadcastReceiver();
-    private final MyFirebaseInstanceIDServiceTokenSent myFirebaseInstanceIDServiceTokenSentBroadcastReceiver = new MyFirebaseInstanceIDServiceTokenSent();
+    private final ConsoleMessageBroadcastReceiver consoleMessageBroadcastReceiver = new ConsoleMessageBroadcastReceiver();
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        initializeToggleButton();
-        initializePingPongServiceStartedBroadcastReceiver();
-        initializePingPongServiceDestroyedBroadcastReceiver();
-        initializePingPongServicePingSentBroadcastReceiver();
-        initializePingPongServicePongReceivedBroadcastReceiver();
-        initializePingPongServiceExceptionBroadcastReceiver();
-        initializeMyFirebaseInstanceIDServiceTokenSentBroadcastReceiver();
+        initializeStartServiceButton();
+        initializeStopServiceButton();
+        initializeConsoleMessageBroadcastReceiver();
 
         appendConsoleMessage("Initialization complete");
     }
 
-    private void initializeToggleButton() {
-        final ToggleButton toggleButton = (ToggleButton) findViewById(R.id.toggle_button);
-        toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+    private void initializeStartServiceButton() {
+        final Button button = (Button) findViewById(R.id.start_service_button);
+        button.setOnClickListener(new View.OnClickListener() {
 
             @Override
-            public void onCheckedChanged(final CompoundButton buttonView, final boolean isChecked) {
-                final Intent pingPongServiceIntent = new Intent(MainActivity.this, PingPongService.class);
+            public void onClick(final View view) {
+                final int internetPermissionStatus = ContextCompat.checkSelfPermission(
+                        MainActivity.this,
+                        Manifest.permission.INTERNET);
 
-                if (isChecked) {
-                    final int internetPermissionStatus = ContextCompat.checkSelfPermission(
-                            MainActivity.this,
-                            Manifest.permission.INTERNET);
-
-                    if (internetPermissionStatus != PackageManager.PERMISSION_GRANTED) {
-                        appendConsoleMessage("Internet permission not granted. Behavior unknown.");
-                    } else {
-                        appendConsoleMessage("Sending start PingPongService intent");
-                        startService(pingPongServiceIntent);
-                    }
-                } else {
-                    appendConsoleMessage("Sending setRunning PingPongService intent");
-                    stopService(pingPongServiceIntent);
+                if (internetPermissionStatus != PackageManager.PERMISSION_GRANTED) {
+                    appendConsoleMessage("Internet permission not granted");
+                    return;
                 }
+
+                appendConsoleMessage("Sending intent to start PingPongService");
+                startService(newPingPongServiceIntent().setAction(PingPongService.START_PING_PONG_SERVICE_ACTION));
             }
 
         });
     }
 
-    private void initializePingPongServiceStartedBroadcastReceiver() {
-        final IntentFilter pingPongServiceStartedIntentFilter =
-                new IntentFilter(PingPongService.PING_PONG_SERVICE_STARTED_ACTION);
+    private void initializeStopServiceButton() {
+        final Button button = (Button) findViewById(R.id.stop_service_button);
+        button.setOnClickListener(new View.OnClickListener() {
 
-        LocalBroadcastManager
-                .getInstance(getApplicationContext())
-                .registerReceiver(
-                        pingPongServiceStartedBroadcastReceiver,
-                        pingPongServiceStartedIntentFilter);
+            @Override
+            public void onClick(final View view) {
+                appendConsoleMessage("Sending intent to stop PingPongService");
+                stopService(newPingPongServiceIntent());
+            }
+
+        });
     }
 
-    private void initializePingPongServiceDestroyedBroadcastReceiver() {
-        final IntentFilter pingPongServiceDestroyedIntentFilter =
-                new IntentFilter(PingPongService.PING_PONG_SERVICE_DESTROYED_ACTION);
-
-        LocalBroadcastManager
-                .getInstance(getApplicationContext())
-                .registerReceiver(
-                        pingPongServiceDestroyedBroadcastReceiver,
-                        pingPongServiceDestroyedIntentFilter);
+    private Intent newPingPongServiceIntent() {
+        return new Intent(MainActivity.this, PingPongService.class);
     }
 
-    private void initializePingPongServicePingSentBroadcastReceiver() {
-        final IntentFilter pingPongServicePingSentIntentFilter =
-                new IntentFilter(PingPongService.PING_PONG_SERVICE_PING_SENT_ACTION);
-
+    private void initializeConsoleMessageBroadcastReceiver() {
+        final IntentFilter intentFilter = new IntentFilter(LOG_CONSOLE_ACTION);
         LocalBroadcastManager
                 .getInstance(getApplicationContext())
                 .registerReceiver(
-                        pingPongServicePingSentBroadcastReceiver,
-                        pingPongServicePingSentIntentFilter);
-    }
-
-    private void initializePingPongServicePongReceivedBroadcastReceiver() {
-        final IntentFilter pingPongServicePongReceivedIntentFilter =
-                new IntentFilter(PingPongService.PING_PONG_SERVICE_PONG_RECEIVED_ACTION);
-
-        LocalBroadcastManager
-                .getInstance(getApplicationContext())
-                .registerReceiver(
-                        pingPongServicePongReceivedBroadcastReceiver,
-                        pingPongServicePongReceivedIntentFilter);
-    }
-
-    private void initializePingPongServiceExceptionBroadcastReceiver() {
-        final IntentFilter pingPongServiceExceptionIntentFilter =
-                new IntentFilter(PingPongService.PING_PONG_SERVICE_EXCEPTION_ACTION);
-
-        LocalBroadcastManager
-                .getInstance(getApplicationContext())
-                .registerReceiver(
-                        pingPongServiceExceptionBroadcastReceiver,
-                        pingPongServiceExceptionIntentFilter);
-    }
-
-    private void initializeMyFirebaseInstanceIDServiceTokenSentBroadcastReceiver() {
-        final IntentFilter myFirebaseInstanceIdServiceTokenSentBroadcastReceiver =
-                new IntentFilter(MyFirebaseInstanceIDService.MY_FIREBASE_INSTANCE_ID_SERVICE_TOKEN_SENT_ACTION);
-
-        LocalBroadcastManager
-                .getInstance(getApplicationContext())
-                .registerReceiver(
-                        myFirebaseInstanceIDServiceTokenSentBroadcastReceiver,
-                        myFirebaseInstanceIdServiceTokenSentBroadcastReceiver);
+                        consoleMessageBroadcastReceiver,
+                        intentFilter);
     }
 
     private void appendConsoleMessage(final String message) {
@@ -219,11 +124,7 @@ public class MainActivity extends AppCompatActivity {
 
         LocalBroadcastManager
                 .getInstance(getApplicationContext())
-                .unregisterReceiver(pingPongServiceStartedBroadcastReceiver);
-
-        LocalBroadcastManager
-                .getInstance(getApplicationContext())
-                .unregisterReceiver(pingPongServiceDestroyedBroadcastReceiver);
+                .unregisterReceiver(consoleMessageBroadcastReceiver);
     }
 
 }

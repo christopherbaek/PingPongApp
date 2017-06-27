@@ -14,23 +14,29 @@
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+                <action android:name="com.cbaek.pingpongapp.LOG_CONSOLE_ACTION" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
         <service android:name=".PingPongService"
                  android:enabled="true"
-                 android:exported="false" />
+                 android:exported="false">
+            <intent-filter>
+                <action android:name="com.cbaek.pingpongapp.START_PING_PONG_SERVICE_ACTION" />
+                <action android:name="com.cbaek.pingpongapp.PING_PONG_SERVICE_FIREBASE_REGISTRATION_ACTION" />
+            </intent-filter>
+        </service>
 
-        <service android:name=".MyFirebaseInstanceIDService"
+        <service android:name=".FirebaseInstanceIdService"
                  android:enabled="true"
-                 android:exported="true">
+                 android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
 
-        <service android:name=".MyFirebaseMessagingService">
+        <service android:name=".FirebaseMessagingService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
             </intent-filter>

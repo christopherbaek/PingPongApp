@@ -7,12 +7,12 @@ import java.net.Socket;
 
 public class PingPongClient {
 
-    private static final String PING_PONG_SERVER_HOST = "ec2-54-209-250-166.compute-1.amazonaws.com";
-    private static final int PING_PONG_SERVER_PORT = 9999;
-    private static final String PING_PONG_SERVER_PING_MESSAGE = "ping";
+    private static final String DEFAULT_HOSTNAME = "ec2-54-209-250-166.compute-1.amazonaws.com";
+    private static final int DEFAULT_PORT = 9999;
+    private static final String PING_MESSAGE = "ping";
     private static final String PING_PONG_SERVER_REGISTRATION_MESSAGE_FORMAT = "registration:%s";
 
-    private final String hostName;
+    private final String hostname;
     private final int port;
 
     private final char[] buffer = new char[25];
@@ -22,31 +22,35 @@ public class PingPongClient {
     private InputStreamReader input;
 
     public PingPongClient() {
-        this(PING_PONG_SERVER_HOST, PING_PONG_SERVER_PORT);
+        this.hostname = DEFAULT_HOSTNAME;
+        this.port = DEFAULT_PORT;
     }
 
-    public PingPongClient(final String hostName, final int port) {
-        this.hostName = hostName;
-        this.port = port;
+    private void initialize() throws IOException {
+        if (socket == null) {
+            socket = new Socket(hostname, port);
+            output = new OutputStreamWriter(socket.getOutputStream());
+            input = new InputStreamReader(socket.getInputStream());
+        }
     }
 
-    public void initialize() throws IOException {
-        socket = new Socket(hostName, port);
-        output = new OutputStreamWriter(socket.getOutputStream());
-        input = new InputStreamReader(socket.getInputStream());
-    }
+    public synchronized void sendPingMessage() throws IOException {
+        initialize();
 
-    public void sendPingMessage() throws IOException {
-        output.write(PING_PONG_SERVER_PING_MESSAGE);
+        output.write(PING_MESSAGE);
         output.flush();
     }
 
-    public void sendRegistrationMessage(final String token) throws IOException {
+    public synchronized void sendRegistrationMessage(final String token) throws IOException {
+        initialize();
+
         output.write(String.format(PING_PONG_SERVER_REGISTRATION_MESSAGE_FORMAT, token));
         output.flush();
     }
 
     public String readServerMessage() throws IOException {
+        initialize();
+
         final int charactersRead = input.read(buffer, 0, buffer.length);
         final String message = new String(buffer, 0, charactersRead);
         return message;
