@@ -10,7 +10,6 @@ public class PingPongClient {
     private static final String DEFAULT_HOSTNAME = "ec2-54-209-250-166.compute-1.amazonaws.com";
     private static final int DEFAULT_PORT = 9999;
     private static final String PING_MESSAGE = "ping";
-    private static final String PING_PONG_SERVER_REGISTRATION_MESSAGE_FORMAT = "registration:%s";
 
     private final String hostname;
     private final int port;
@@ -38,13 +37,6 @@ public class PingPongClient {
         initialize();
 
         output.write(PING_MESSAGE);
-        output.flush();
-    }
-
-    public synchronized void sendRegistrationMessage(final String token) throws IOException {
-        initialize();
-
-        output.write(String.format(PING_PONG_SERVER_REGISTRATION_MESSAGE_FORMAT, token));
         output.flush();
     }
 

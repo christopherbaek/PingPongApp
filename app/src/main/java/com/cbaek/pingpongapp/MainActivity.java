@@ -46,9 +46,12 @@ public class MainActivity extends AppCompatActivity {
 
         initializeStartServiceButton();
         initializeStopServiceButton();
+        initializeSendFirebaseTokenButton();
         initializeConsoleMessageBroadcastReceiver();
 
-        appendConsoleMessage("Initialization complete");
+        appendConsoleMessage("MainActivity created");
+
+        startPingPongService();
     }
 
     private void initializeStartServiceButton() {
@@ -66,8 +69,7 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
-                appendConsoleMessage("Sending intent to start PingPongService");
-                startService(newPingPongServiceIntent().setAction(PingPongService.START_PING_PONG_SERVICE_ACTION));
+                startPingPongService();
             }
 
         });
@@ -79,15 +81,23 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onClick(final View view) {
-                appendConsoleMessage("Sending intent to stop PingPongService");
-                stopService(newPingPongServiceIntent());
+                appendConsoleMessage("MainActivity sending intent to destroy PingPongService");
+                stopService(PingPongService.newPingPongServiceIntent(MainActivity.this));
             }
 
         });
     }
 
-    private Intent newPingPongServiceIntent() {
-        return new Intent(MainActivity.this, PingPongService.class);
+    private void initializeSendFirebaseTokenButton() {
+        final Button button = (Button) findViewById(R.id.send_firebase_token_button);
+        button.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(final View view) {
+                new SendFirebaseTokenTask(MainActivity.this).execute();
+            }
+
+        });
     }
 
     private void initializeConsoleMessageBroadcastReceiver() {
@@ -97,6 +107,11 @@ public class MainActivity extends AppCompatActivity {
                 .registerReceiver(
                         consoleMessageBroadcastReceiver,
                         intentFilter);
+    }
+
+    private void startPingPongService() {
+        appendConsoleMessage("MainActivity sending intent to start PingPongService");
+        startService(PingPongService.newPingPongServiceIntent(MainActivity.this));
     }
 
     private void appendConsoleMessage(final String message) {

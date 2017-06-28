@@ -24,6 +24,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/stop_service_button_text" />
+
+        <Button
+            android:id="@+id/send_firebase_token_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/send_firebase_token_button_text" />
     </LinearLayout>
 
     <ScrollView android:id="@+id/console_view"

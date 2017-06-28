@@ -2,4 +2,5 @@
     <string name="app_name">PingPongApp</string>
     <string name="start_service_button_text">Start Service</string>
     <string name="stop_service_button_text">Stop Service</string>
+    <string name="send_firebase_token_button_text">Send Firebase Token</string>
 </resources>

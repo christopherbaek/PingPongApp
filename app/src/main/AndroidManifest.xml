@@ -22,10 +22,6 @@
         <service android:name=".PingPongService"
                  android:enabled="true"
                  android:exported="false">
-            <intent-filter>
-                <action android:name="com.cbaek.pingpongapp.START_PING_PONG_SERVICE_ACTION" />
-                <action android:name="com.cbaek.pingpongapp.PING_PONG_SERVICE_FIREBASE_REGISTRATION_ACTION" />
-            </intent-filter>
         </service>
 
         <service android:name=".FirebaseInstanceIdService"
